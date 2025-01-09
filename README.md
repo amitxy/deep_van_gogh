@@ -1,1 +1,1 @@
-# deep_van_gogh
+# Deep Van Gogh
