@@ -29,11 +29,14 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
         correct_train_predictions = 0 # Initializing the counter for the total number of correctly predicted training samples.
 
         for inputs, labels in train_loader: #Iterates over the train_loader, which is a DataLoader object containing batches of training data. Each iteration yields a batch of inputs (images) and corresponding labels (ground-truth classes).
+            mask = ~torch.isin(labels, torch.tensor(-1))
+            inputs, labels = inputs[mask], labels[mask]
             inputs, labels = inputs.to(device), labels.to(device)
 
             optimizer.zero_grad()  # Reset gradients
             outputs = model(inputs)  # Forward pass
-            loss = criterion(outputs, labels)  # Calculate loss
+            # print(f'[****]lab:{labels}')
+            loss = criterion(torch.sigmoid(outputs), labels.unsqueeze(-1).float())  # Calculate loss
             loss.backward()  # Backward pass
             optimizer.step()  # Update weights using the optimizer
 

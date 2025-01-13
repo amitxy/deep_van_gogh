@@ -1,13 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JupyterPersistentConnectionParameters">
+    <option name="knownRemoteServers">
+      <list>
+        <JupyterConnectionParameters>
+          <option name="authType" value="notebook" />
+          <option name="token" value="62feaab796b67ec98ccb50f034ef1a8657b4ac61cb8de52b" />
+          <option name="urlString" value="http://127.0.0.1:8890/" />
+          <authParams2>
+            <map>
+              <entry key="token" value="62feaab796b67ec98ccb50f034ef1a8657b4ac61cb8de52b" />
+            </map>
+          </authParams2>
+        </JupyterConnectionParameters>
+        <JupyterConnectionParameters>
+          <option name="authType" value="notebook" />
+          <option name="token" value="62feaab796b67ec98ccb50f034ef1a8657b4ac61cb8de52b" />
+          <option name="urlString" value="http://localhost:8890/" />
+          <authParams2>
+            <map>
+              <entry key="token" value="62feaab796b67ec98ccb50f034ef1a8657b4ac61cb8de52b" />
+            </map>
+          </authParams2>
+        </JupyterConnectionParameters>
+      </list>
+    </option>
     <option name="moduleParameters">
       <map>
-        <entry key="C:/Projects/data/.idea/data.iml">
+        <entry key="$PROJECT_DIR$/../../../../Projects/data/.idea/data.iml">
           <value>
             <JupyterConnectionParameters>
               <option name="managed" value="true" />
               <option name="sdkHomePath" value="C:\Users\Amit\anaconda3\python.exe" />
+            </JupyterConnectionParameters>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/.idea/deep_van_gogh.iml">
+          <value>
+            <JupyterConnectionParameters>
+              <option name="authType" value="notebook" />
+              <option name="token" value="62feaab796b67ec98ccb50f034ef1a8657b4ac61cb8de52b" />
+              <option name="urlString" value="http://localhost:8890/" />
+              <authParams2>
+                <map>
+                  <entry key="token" value="62feaab796b67ec98ccb50f034ef1a8657b4ac61cb8de52b" />
+                </map>
+              </authParams2>
             </JupyterConnectionParameters>
           </value>
         </entry>
