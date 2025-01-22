@@ -1,0 +1,18 @@
+{"time":"2025-01-21T20:13:15.1356622+02:00","level":"INFO","msg":"using version","core version":"0.19.1"}
+{"time":"2025-01-21T20:13:15.1394162+02:00","level":"INFO","msg":"created symlink","path":"E:\\My Drive\\Intro to deep learning\\deep_van_gogh\\wandb\\run-20250121_201315-vnsa13hw\\logs\\debug-core.log"}
+{"time":"2025-01-21T20:13:15.2966797+02:00","level":"INFO","msg":"created new stream","id":"vnsa13hw"}
+{"time":"2025-01-21T20:13:15.2993788+02:00","level":"INFO","msg":"stream: started","id":"vnsa13hw"}
+{"time":"2025-01-21T20:13:15.2994386+02:00","level":"INFO","msg":"handler: started","stream_id":"vnsa13hw"}
+{"time":"2025-01-21T20:13:15.2994386+02:00","level":"INFO","msg":"sender: started","stream_id":"vnsa13hw"}
+{"time":"2025-01-21T20:13:15.2994386+02:00","level":"INFO","msg":"writer: Do: started","stream_id":"vnsa13hw"}
+{"time":"2025-01-21T20:13:15.7512081+02:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-01-21T20:13:25.8740209+02:00","level":"ERROR","msg":"monitor: disk: error sampling metrics: Incorrect function."}
+{"time":"2025-01-21T20:14:44.3015374+02:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-01-21T20:14:44.3064648+02:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-01-21T20:14:45.3060215+02:00","level":"INFO","msg":"handler: operation stats","stats":{"operations":[{"desc":"uploading output.log","runtime_seconds":0.3312234}],"total_operations":1}}
+{"time":"2025-01-21T20:14:45.3683096+02:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-01-21T20:14:46.6709316+02:00","level":"INFO","msg":"stream: closing","id":"vnsa13hw"}
+{"time":"2025-01-21T20:14:46.6709316+02:00","level":"INFO","msg":"handler: closed","stream_id":"vnsa13hw"}
+{"time":"2025-01-21T20:14:46.6709316+02:00","level":"INFO","msg":"writer: Close: closed","stream_id":"vnsa13hw"}
+{"time":"2025-01-21T20:14:46.6709316+02:00","level":"INFO","msg":"sender: closed","stream_id":"vnsa13hw"}
+{"time":"2025-01-21T20:14:46.6779384+02:00","level":"INFO","msg":"stream: closed","id":"vnsa13hw"}

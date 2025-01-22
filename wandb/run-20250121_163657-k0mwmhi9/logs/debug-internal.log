@@ -1,0 +1,18 @@
+{"time":"2025-01-21T16:37:00.4949033+02:00","level":"INFO","msg":"using version","core version":"0.19.1"}
+{"time":"2025-01-21T16:37:00.4999051+02:00","level":"INFO","msg":"created symlink","path":"E:\\My Drive\\Intro to deep learning\\deep_van_gogh\\wandb\\run-20250121_163657-k0mwmhi9\\logs\\debug-core.log"}
+{"time":"2025-01-21T16:37:03.046161+02:00","level":"INFO","msg":"created new stream","id":"k0mwmhi9"}
+{"time":"2025-01-21T16:37:03.0471598+02:00","level":"INFO","msg":"stream: started","id":"k0mwmhi9"}
+{"time":"2025-01-21T16:37:03.0471598+02:00","level":"INFO","msg":"writer: Do: started","stream_id":"k0mwmhi9"}
+{"time":"2025-01-21T16:37:03.0471598+02:00","level":"INFO","msg":"sender: started","stream_id":"k0mwmhi9"}
+{"time":"2025-01-21T16:37:03.0491603+02:00","level":"INFO","msg":"handler: started","stream_id":"k0mwmhi9"}
+{"time":"2025-01-21T16:37:11.4976637+02:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-01-21T16:37:21.5005867+02:00","level":"ERROR","msg":"monitor: disk: error sampling metrics: Incorrect function."}
+{"time":"2025-01-21T16:42:03.1579284+02:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-01-21T16:42:03.2007158+02:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-01-21T16:42:04.1549775+02:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-01-21T16:42:04.4751055+02:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2025-01-21T16:42:06.3273268+02:00","level":"INFO","msg":"stream: closing","id":"k0mwmhi9"}
+{"time":"2025-01-21T16:42:06.3288684+02:00","level":"INFO","msg":"sender: closed","stream_id":"k0mwmhi9"}
+{"time":"2025-01-21T16:42:06.3288684+02:00","level":"INFO","msg":"handler: closed","stream_id":"k0mwmhi9"}
+{"time":"2025-01-21T16:42:06.3288684+02:00","level":"INFO","msg":"writer: Close: closed","stream_id":"k0mwmhi9"}
+{"time":"2025-01-21T16:42:06.3304642+02:00","level":"INFO","msg":"stream: closed","id":"k0mwmhi9"}

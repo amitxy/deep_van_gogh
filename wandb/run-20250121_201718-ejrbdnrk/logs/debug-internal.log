@@ -1,0 +1,18 @@
+{"time":"2025-01-21T20:17:18.4058263+02:00","level":"INFO","msg":"using version","core version":"0.19.1"}
+{"time":"2025-01-21T20:17:18.4095779+02:00","level":"INFO","msg":"created symlink","path":"E:\\My Drive\\Intro to deep learning\\deep_van_gogh\\wandb\\run-20250121_201718-ejrbdnrk\\logs\\debug-core.log"}
+{"time":"2025-01-21T20:17:18.5565103+02:00","level":"INFO","msg":"created new stream","id":"ejrbdnrk"}
+{"time":"2025-01-21T20:17:18.557695+02:00","level":"INFO","msg":"stream: started","id":"ejrbdnrk"}
+{"time":"2025-01-21T20:17:18.557695+02:00","level":"INFO","msg":"writer: Do: started","stream_id":"ejrbdnrk"}
+{"time":"2025-01-21T20:17:18.557695+02:00","level":"INFO","msg":"sender: started","stream_id":"ejrbdnrk"}
+{"time":"2025-01-21T20:17:18.557695+02:00","level":"INFO","msg":"handler: started","stream_id":"ejrbdnrk"}
+{"time":"2025-01-21T20:17:18.8519067+02:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-01-21T20:17:28.8532437+02:00","level":"ERROR","msg":"monitor: disk: error sampling metrics: Incorrect function."}
+{"time":"2025-01-21T20:18:53.9269044+02:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-01-21T20:18:53.9281985+02:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-01-21T20:18:54.9344937+02:00","level":"INFO","msg":"handler: operation stats","stats":{"operations":[{"desc":"uploading output.log","runtime_seconds":0.361795}],"total_operations":1}}
+{"time":"2025-01-21T20:18:55.4597677+02:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-01-21T20:18:56.8432664+02:00","level":"INFO","msg":"stream: closing","id":"ejrbdnrk"}
+{"time":"2025-01-21T20:18:56.8432664+02:00","level":"INFO","msg":"handler: closed","stream_id":"ejrbdnrk"}
+{"time":"2025-01-21T20:18:56.8432664+02:00","level":"INFO","msg":"writer: Close: closed","stream_id":"ejrbdnrk"}
+{"time":"2025-01-21T20:18:56.8432664+02:00","level":"INFO","msg":"sender: closed","stream_id":"ejrbdnrk"}
+{"time":"2025-01-21T20:18:56.8630761+02:00","level":"INFO","msg":"stream: closed","id":"ejrbdnrk"}

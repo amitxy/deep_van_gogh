@@ -1,0 +1,14 @@
+{"time":"2025-01-21T20:29:22.74258+02:00","level":"INFO","msg":"using version","core version":"0.19.1"}
+{"time":"2025-01-21T20:29:22.745213+02:00","level":"INFO","msg":"created symlink","path":"E:\\My Drive\\Intro to deep learning\\deep_van_gogh\\wandb\\run-20250121_202922-7mekfceo\\logs\\debug-core.log"}
+{"time":"2025-01-21T20:29:23.0071818+02:00","level":"INFO","msg":"created new stream","id":"7mekfceo"}
+{"time":"2025-01-21T20:29:23.0071818+02:00","level":"INFO","msg":"handler: started","stream_id":"7mekfceo"}
+{"time":"2025-01-21T20:29:23.0071818+02:00","level":"INFO","msg":"writer: Do: started","stream_id":"7mekfceo"}
+{"time":"2025-01-21T20:29:23.0071818+02:00","level":"INFO","msg":"sender: started","stream_id":"7mekfceo"}
+{"time":"2025-01-21T20:29:23.0071818+02:00","level":"INFO","msg":"stream: started","id":"7mekfceo"}
+{"time":"2025-01-21T20:29:23.3128961+02:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-01-21T20:29:33.3151614+02:00","level":"ERROR","msg":"monitor: disk: error sampling metrics: Incorrect function."}
+{"time":"2025-01-21T20:32:55.8309362+02:00","level":"INFO","msg":"Pausing system monitor"}
+{"time":"2025-01-21T20:32:56.5751571+02:00","level":"INFO","msg":"Resuming system monitor"}
+{"time":"2025-01-21T20:32:58.1590093+02:00","level":"INFO","msg":"Pausing system monitor"}
+{"time":"2025-01-21T20:33:52.4499859+02:00","level":"INFO","msg":"Resuming system monitor"}
+{"time":"2025-01-21T20:38:49.7496016+02:00","level":"INFO","msg":"Pausing system monitor"}
