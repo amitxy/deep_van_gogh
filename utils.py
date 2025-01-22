@@ -6,7 +6,7 @@ DATA_DIR = './data/dataset'
 DATASET_DIR = 'data/dataset/Post_Impressionism'
 CSV_PATH = 'data/dataset/classes.csv'
 OPTIMIZED_DIR = './data/optimized/'
-MODELS_DIR = './data/models/'
+MODELS_DIR = './models/'
 
 def show_optimization_progress(current_size, total_size):
     sys.stdout.flush()
