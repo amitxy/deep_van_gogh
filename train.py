@@ -1,5 +1,7 @@
 import torch
 import wandb
+import os
+import utils
 
 # Checks whether training should stop early to prevent overfitting or excessive computation.
 # This function compares the current validation loss with the best recorded validation loss. If no improvement is observed within the allowed patience (number of epochs), it signals that training should stop early.
@@ -16,12 +18,16 @@ def early_stop_check(patience, best_val_loss, best_val_loss_epoch, current_val_l
     return best_val_loss, best_val_loss_epoch, early_stop_flag
 
 
-def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, criterion, epochs, patience, trial, device):
+def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, criterion, epochs, patience, device, trial, architecture):
     best_val_loss = float('inf')  # Initialize the best validation loss
     best_val_loss_epoch = 0  # Track epoch with the best validation loss
     early_stop_flag = False
-    best_model_state = None  # To save the best model in each trial, we could have defined it to same the model after each epoch, save only the best one, and so on...
 
+    # To save the best model in each trial
+    best_model_state = None
+    best_model_optimizer_state = None
+
+    model.to(device)
     for epoch in range(1, epochs + 1):
         model.train()  # Enable training mode
         train_loss = 0.0 # Initializing the cumulative training loss for the current epoch to 0.
@@ -75,24 +81,29 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
         # Check for early stopping
         best_val_loss, best_val_loss_epoch, early_stop_flag = early_stop_check(patience, best_val_loss, best_val_loss_epoch, val_loss, epoch)
 
-        # Save the best model under the best_model_state parameter
+        # Save the best model under the best_model_state parameter and it's optimizer
         if val_loss == best_val_loss:
             best_model_state = model.state_dict()
+            best_model_optimizer_state = optimizer.state_dict()
 
-        # Log metrics to Weights & Biases - THIS IS WHERE WE TRACK THE RESULTS AND THE PROCESS
-        wandb.log({ #log == logging of the training process (e.g. results)
-            "Epoch": epoch,
-            "Train Loss": train_loss,
-            "Train Accuracy": train_accuracy,
-            "Validation Loss": val_loss,
-            "Validation Accuracy": val_accuracy
-        })
+        if trial is not None:
+            # Log metrics to Weights & Biases - THIS IS WHERE WE TRACK THE RESULTS AND THE PROCESS
+            wandb.log({ #log == logging of the training process (e.g. results)
+                "Epoch": epoch,
+                "Train Loss": train_loss,
+                "Train Accuracy": train_accuracy,
+                "Validation Loss": val_loss,
+                "Validation Accuracy": val_accuracy
+            })
 
         if early_stop_flag: # Checks whether the early stopping condition has been met, as indicated by the early_stop_flag
             break # Exits the training loop immediately if the early stopping condition is satisfied
 
     # Save the best model as a .pt file
     if best_model_state is not None and trial is not None: # basically just makes sure that there is a better model (if there is an error the val loss will remain -inf)
-        torch.save(best_model_state, f"./models/best_model_trial_{trial.number}.pt") # Save into the same directory
+        save_dir = os.path.join(utils.MODELS_DIR, architecture)
+        os.makedirs(save_dir, exist_ok=True)  # Ensures that dir exists
+        torch.save({'model_state_dict': best_model_state, 'optimizer_state_dict': best_model_optimizer_state},
+                   f"{save_dir}/best_model_trial_{trial.number}.pt") # Save into the same directory
 
     return best_val_loss
