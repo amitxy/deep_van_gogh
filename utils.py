@@ -2,7 +2,7 @@ import os
 import time
 import sys
 
-ROOT = './data/dataset'
+DATA_DIR = './data/dataset'
 DATASET_DIR = 'data/dataset/Post_Impressionism'
 CSV_PATH = 'data/dataset/classes.csv'
 OPTIMIZED_DIR = './data/optimized/'
