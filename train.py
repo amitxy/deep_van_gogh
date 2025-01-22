@@ -93,6 +93,6 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
 
     # Save the best model as a .pt file
     if best_model_state is not None and trial is not None: # basically just makes sure that there is a better model (if there is an error the val loss will remain -inf)
-        torch.save(best_model_state, f"best_model_trial_{trial.number}.pt") # Save into the same directory
+        torch.save(best_model_state, f"./models/best_model_trial_{trial.number}.pt") # Save into the same directory
 
     return best_val_loss
