@@ -1,0 +1,18 @@
+{"time":"2025-01-22T16:02:24.9085919+02:00","level":"INFO","msg":"using version","core version":"0.19.1"}
+{"time":"2025-01-22T16:02:24.9085919+02:00","level":"INFO","msg":"created symlink","path":"C:\\Projects\\deep_van_gogh\\wandb\\run-20250122_160224-ipk3eviz\\logs\\debug-core.log"}
+{"time":"2025-01-22T16:02:25.2103962+02:00","level":"INFO","msg":"created new stream","id":"ipk3eviz"}
+{"time":"2025-01-22T16:02:25.2103962+02:00","level":"INFO","msg":"stream: started","id":"ipk3eviz"}
+{"time":"2025-01-22T16:02:25.2103962+02:00","level":"INFO","msg":"writer: Do: started","stream_id":"ipk3eviz"}
+{"time":"2025-01-22T16:02:25.2103962+02:00","level":"INFO","msg":"sender: started","stream_id":"ipk3eviz"}
+{"time":"2025-01-22T16:02:25.2103962+02:00","level":"INFO","msg":"handler: started","stream_id":"ipk3eviz"}
+{"time":"2025-01-22T16:02:25.5108856+02:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-01-22T16:02:35.5130951+02:00","level":"ERROR","msg":"monitor: disk: error sampling metrics: Incorrect function."}
+{"time":"2025-01-22T16:02:48.0348476+02:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-01-22T16:02:48.0356382+02:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-01-22T16:02:49.0474288+02:00","level":"INFO","msg":"handler: operation stats","stats":{"operations":[{"desc":"uploading wandb-summary.json","runtime_seconds":0.7759709,"progress":"249B/249B"},{"desc":"uploading config.yaml","runtime_seconds":0.5866937,"progress":"926B/926B"},{"desc":"uploading output.log","runtime_seconds":0.5866937}],"total_operations":3}}
+{"time":"2025-01-22T16:02:49.3434075+02:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-01-22T16:02:50.6695064+02:00","level":"INFO","msg":"stream: closing","id":"ipk3eviz"}
+{"time":"2025-01-22T16:02:50.6695064+02:00","level":"INFO","msg":"handler: closed","stream_id":"ipk3eviz"}
+{"time":"2025-01-22T16:02:50.6695064+02:00","level":"INFO","msg":"writer: Close: closed","stream_id":"ipk3eviz"}
+{"time":"2025-01-22T16:02:50.6695064+02:00","level":"INFO","msg":"sender: closed","stream_id":"ipk3eviz"}
+{"time":"2025-01-22T16:02:50.6702977+02:00","level":"INFO","msg":"stream: closed","id":"ipk3eviz"}

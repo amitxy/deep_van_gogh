@@ -1,0 +1,35 @@
+2025-01-22 16:45:29,137 INFO    MainThread:17156 [wandb_setup.py:_flush():68] Current SDK version is 0.19.1
+2025-01-22 16:45:29,138 INFO    MainThread:17156 [wandb_setup.py:_flush():68] Configure stats pid to 17156
+2025-01-22 16:45:29,140 INFO    MainThread:17156 [wandb_setup.py:_flush():68] Loading settings from C:\Users\Amit\.config\wandb\settings
+2025-01-22 16:45:29,141 INFO    MainThread:17156 [wandb_setup.py:_flush():68] Loading settings from C:\Projects\deep_van_gogh\wandb\settings
+2025-01-22 16:45:29,141 INFO    MainThread:17156 [wandb_setup.py:_flush():68] Loading settings from environment variables
+2025-01-22 16:45:29,141 INFO    MainThread:17156 [wandb_init.py:_log_setup():528] Logging user logs to C:\Projects\deep_van_gogh\wandb\run-20250122_164529-b7bho3pb\logs\debug.log
+2025-01-22 16:45:29,141 INFO    MainThread:17156 [wandb_init.py:_log_setup():529] Logging internal logs to C:\Projects\deep_van_gogh\wandb\run-20250122_164529-b7bho3pb\logs\debug-internal.log
+2025-01-22 16:45:29,141 INFO    MainThread:17156 [wandb_init.py:_jupyter_setup():474] configuring jupyter hooks <wandb.sdk.wandb_init._WandbInit object at 0x000001DE06E1B5B0>
+2025-01-22 16:45:29,151 INFO    MainThread:17156 [wandb_init.py:init():644] calling init triggers
+2025-01-22 16:45:29,151 INFO    MainThread:17156 [wandb_init.py:init():650] wandb.init called with sweep_config: {}
+config: {'learning_rate': 0.00021040501369206028, 'weight_decay': 8.022270892118722e-05, 'patience': 10, 'batch_size': 64, 'epochs': 5, 'architecture': 'VGG19', 'dataset': 'Post_Impressionism'}
+2025-01-22 16:45:29,151 INFO    MainThread:17156 [wandb_init.py:init():680] starting backend
+2025-01-22 16:45:29,152 INFO    MainThread:17156 [wandb_init.py:init():684] sending inform_init request
+2025-01-22 16:45:29,279 INFO    MainThread:17156 [backend.py:_multiprocessing_setup():104] multiprocessing start_methods=spawn, using: spawn
+2025-01-22 16:45:29,572 INFO    MainThread:17156 [wandb_init.py:init():697] backend started and connected
+2025-01-22 16:45:30,870 INFO    MainThread:17156 [wandb_run.py:_label_probe_notebook():1222] probe notebook
+2025-01-22 16:45:30,882 INFO    MainThread:17156 [wandb_run.py:_label_probe_notebook():1232] Unable to probe notebook: 'charmap' codec can't decode byte 0x81 in position 104839: character maps to <undefined>
+2025-01-22 16:45:30,882 INFO    MainThread:17156 [wandb_init.py:init():790] updated telemetry
+2025-01-22 16:45:39,265 INFO    MainThread:17156 [wandb_init.py:init():822] communicating run to backend with 90.0 second timeout
+2025-01-22 16:45:39,643 INFO    MainThread:17156 [wandb_init.py:init():874] starting run threads in backend
+2025-01-22 16:45:41,171 INFO    MainThread:17156 [wandb_run.py:_console_start():2374] atexit reg
+2025-01-22 16:45:41,171 INFO    MainThread:17156 [wandb_run.py:_redirect():2224] redirect: wrap_raw
+2025-01-22 16:45:41,172 INFO    MainThread:17156 [wandb_run.py:_redirect():2289] Wrapping output streams.
+2025-01-22 16:45:41,172 INFO    MainThread:17156 [wandb_run.py:_redirect():2314] Redirects installed.
+2025-01-22 16:45:41,174 INFO    MainThread:17156 [wandb_init.py:init():916] run started, returning control to user process
+2025-01-22 16:48:00,767 INFO    MainThread:17156 [wandb_run.py:_finish():2100] finishing run amitr5-tel-aviv-university/deep_van_gogh/b7bho3pb
+2025-01-22 16:48:01,059 INFO    MainThread:17156 [jupyter.py:save_history():458] not saving jupyter history
+2025-01-22 16:48:01,062 INFO    MainThread:17156 [jupyter.py:save_ipynb():386] not saving jupyter notebook
+2025-01-22 16:48:01,066 INFO    MainThread:17156 [wandb_init.py:_jupyter_teardown():456] cleaning up jupyter logic
+2025-01-22 16:48:01,109 INFO    MainThread:17156 [wandb_run.py:_atexit_cleanup():2339] got exitcode: 0
+2025-01-22 16:48:01,163 INFO    MainThread:17156 [wandb_run.py:_restore():2321] restore
+2025-01-22 16:48:01,171 INFO    MainThread:17156 [wandb_run.py:_restore():2327] restore done
+2025-01-22 16:48:03,613 INFO    MainThread:17156 [wandb_run.py:_footer_history_summary_info():3892] rendering history
+2025-01-22 16:48:03,619 INFO    MainThread:17156 [wandb_run.py:_footer_history_summary_info():3924] rendering summary
+2025-01-22 16:48:03,971 INFO    MainThread:17156 [wandb_run.py:_footer_sync_info():3853] logging synced files
