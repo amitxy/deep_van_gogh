@@ -1,4 +1,6 @@
 import torch
+
+
 import wandb
 import os
 import utils
@@ -6,22 +8,27 @@ from sklearn.metrics import roc_auc_score
 
 # Checks whether training should stop early to prevent overfitting or excessive computation.
 # This function compares the current validation metric with the best recorded validation metric. If no improvement is observed within the allowed patience (number of epochs), it signals that training should stop early.
-def early_stop_check(patience, best_val, best_val_epoch, current_val, current_val_epoch):
+def early_stop_check(patience, best_value, best_value_epoch, current_value, current_value_epoch, direction='maximize'):
     early_stop_flag = False  # Initialize flag to be False
-    if current_val < best_val:
+    # If we are maximizing the metric, we need to negate the values
+    if direction == 'maximize':
+        current_value, best_value = -current_value, -best_value
+
+    if current_value < best_value:
         # Update the parameters holding the best validation loss details
-        best_val = current_val
-        best_val_epoch = current_val_epoch
+        best_value = current_value
+        best_value_epoch = current_value_epoch
     else:
         # Check if more than acceptable epochs have passed without improvement
-        if current_val_epoch - best_val_epoch > patience:
+        if current_value_epoch - best_value_epoch > patience:
             early_stop_flag = True  # Change flag
-    return best_val, best_val_epoch, early_stop_flag
+    return best_value, best_value_epoch, early_stop_flag
 
 
-def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, criterion, epochs, patience, device, trial, architecture):
-    best_val = float('inf')  # Initialize the best validation loss
-    best_val_epoch = 0  # Track epoch with the best validation loss
+
+def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, criterion, epochs, patience, device, trial, architecture, fold):
+    best_value = float('-inf')  # Initialize the best validation loss
+    best_value_epoch = 0  # Track epoch with the best validation loss
     early_stop_flag = False
 
     # To save the best model in each trial
@@ -63,8 +70,11 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
         total_val_samples = 0 # Same initialization as in the train
         correct_val_predictions = 0 # Same initialization as in the train
 
-        val_labels = []
-        val_preds = []
+        # For AUC calculation - pre-allocate arrays
+        all_val_labels = torch.zeros(len(val_loader.dataset), dtype=torch.long)
+        all_val_probs = torch.zeros(len(val_loader.dataset), dtype=torch.float32)
+        idx = 0
+
         with torch.no_grad():  # Disable gradient computation
             for inputs, labels in val_loader: # iterate on the val_loader's batches
                 inputs, labels = inputs.to(device), labels.to(device)
@@ -76,20 +86,31 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
                 _, predicted = torch.max(outputs, 1)
                 correct_val_predictions += (predicted == labels).sum().item()
 
-                val_labels.extend(labels.cpu().numpy())
-                val_preds.extend(predicted.cpu().numpy())
+                # Get probabilities using softmax
+                probs = torch.softmax(outputs, dim=1)[:, 1]
+                # Store in pre-allocated arrays
+                batch_size = labels.size(0)
+                all_val_labels[idx:idx + batch_size] = labels.cpu()
+                all_val_probs[idx:idx + batch_size] = probs.cpu()
+                idx += batch_size
+
         # Calculate average validation loss and accuracy
         val_loss /= total_val_samples
         val_accuracy = correct_val_predictions / total_val_samples
 
-        auc = roc_auc_score(val_labels, val_preds)
+        val_auc = roc_auc_score(all_val_labels.numpy(), all_val_probs.numpy())
 
         # Check for early stopping
-        best_val, best_val_epoch, early_stop_flag = early_stop_check(patience, best_val, best_val_epoch, val_loss, epoch)
+        best_value, best_value_epoch, early_stop_flag = early_stop_check(patience,
+                                                                         best_value,
+                                                                         best_value_epoch,
+                                                                         val_auc,
+                                                                         epoch,
+                                                                         direction='maximize')
 
         # Save the best model under the best_model_state parameter and it's optimizer
-        if val_loss == best_val:
-            best_model_state = model.state_dict()
+        if val_auc == best_value:
+            # best_model_state = model.state_dict()
             best_model_optimizer_state = optimizer.state_dict()
 
         if trial is not None:
@@ -100,17 +121,17 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
                 "Train Accuracy": train_accuracy,
                 "Validation Loss": val_loss,
                 "Validation Accuracy": val_accuracy,
-                "AUC": auc
+                'Validation AUC': val_auc,
             })
 
         if early_stop_flag: # Checks whether the early stopping condition has been met, as indicated by the early_stop_flag
             break # Exits the training loop immediately if the early stopping condition is satisfied
 
     # Save the best model as a .pt file
-    # if best_model_state is not None and trial is not None: # basically just makes sure that there is a better model (if there is an error the val loss will remain -inf)
-    #     save_dir = os.path.join(utils.MODELS_DIR, architecture)
-    #     os.makedirs(save_dir, exist_ok=True)  # Ensures that dir exists
-    #     torch.save({'model_state_dict': best_model_state, 'optimizer_state_dict': best_model_optimizer_state},
-    #                f"{save_dir}/best_model_trial_{trial.number}.pt") # Save into the same directory
+    if best_model_state is not None and trial is not None: # basically just makes sure that there is a better model (if there is an error the val loss will remain -inf)
+        save_dir = os.path.join(utils.MODELS_DIR, architecture)
+        os.makedirs(save_dir, exist_ok=True)  # Ensures that dir exists
+        torch.save({'optimizer_state_dict': best_model_optimizer_state},
+                   f"{save_dir}/best_model_trial_{trial.number}_fold_{fold}.pt") # Save into the same directory
 
-    return best_val
+    return best_value
