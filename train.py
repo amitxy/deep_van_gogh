@@ -4,17 +4,16 @@ import torch
 import wandb
 import os
 import utils
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score,confusion_matrix, ConfusionMatrixDisplay
+
 
 # Checks whether training should stop early to prevent overfitting or excessive computation.
 # This function compares the current validation metric with the best recorded validation metric. If no improvement is observed within the allowed patience (number of epochs), it signals that training should stop early.
 def early_stop_check(patience, best_value, best_value_epoch, current_value, current_value_epoch, direction='maximize'):
     early_stop_flag = False  # Initialize flag to be False
-    # If we are maximizing the metric, we need to negate the values
-    if direction == 'maximize':
-        current_value, best_value = -current_value, -best_value
 
-    if current_value < best_value:
+
+    if current_value > best_value:
         # Update the parameters holding the best validation loss details
         best_value = current_value
         best_value_epoch = current_value_epoch
@@ -100,6 +99,15 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
 
         val_auc = roc_auc_score(all_val_labels.numpy(), all_val_probs.numpy())
 
+        val_F1 = f1_score(all_val_labels.numpy(), all_val_probs.numpy(),average='weighted')
+
+        val_precision = precision_score(all_val_labels.numpy(), all_val_probs.numpy(),average='weighted')
+
+        val_recall = recall_score(all_val_labels.numpy(), all_val_probs.numpy(),average='weighted')
+
+        tn, fp, fn, tp = confusion_matrix(all_val_labels.numpy(), all_val_probs.numpy().round()).ravel()
+        val_specificity = tn / (tn + fp)
+
         # Check for early stopping
         best_value, best_value_epoch, early_stop_flag = early_stop_check(patience,
                                                                          best_value,
@@ -122,6 +130,10 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
                 "Validation Loss": val_loss,
                 "Validation Accuracy": val_accuracy,
                 'Validation AUC': val_auc,
+                'Validation F1': val_F1,
+                'Validation Precision': val_precision,
+                'Validation Recall': val_recall,
+                'Validation Specificity': val_specificity
             })
 
         if early_stop_flag: # Checks whether the early stopping condition has been met, as indicated by the early_stop_flag
@@ -133,5 +145,6 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
         os.makedirs(save_dir, exist_ok=True)  # Ensures that dir exists
         torch.save({'optimizer_state_dict': best_model_optimizer_state},
                    f"{save_dir}/best_model_trial_{trial.number}_fold_{fold}.pt") # Save into the same directory
+
 
     return best_value
