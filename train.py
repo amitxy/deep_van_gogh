@@ -4,17 +4,16 @@ import torch
 import wandb
 import os
 import utils
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score,confusion_matrix, ConfusionMatrixDisplay
+
 
 # Checks whether training should stop early to prevent overfitting or excessive computation.
 # This function compares the current validation metric with the best recorded validation metric. If no improvement is observed within the allowed patience (number of epochs), it signals that training should stop early.
 def early_stop_check(patience, best_value, best_value_epoch, current_value, current_value_epoch, direction='maximize'):
     early_stop_flag = False  # Initialize flag to be False
-    # If we are maximizing the metric, we need to negate the values
-    if direction == 'maximize':
-        current_value, best_value = -current_value, -best_value
 
-    if current_value < best_value:
+
+    if current_value > best_value:
         # Update the parameters holding the best validation loss details
         best_value = current_value
         best_value_epoch = current_value_epoch
@@ -26,7 +25,7 @@ def early_stop_check(patience, best_value, best_value_epoch, current_value, curr
 
 
 
-def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, criterion, epochs, patience, device, trial, architecture, fold):
+def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, criterion, epochs, patience, device, trial, architecture, fold,save=False):
     best_value = float('-inf')  # Initialize the best validation loss
     best_value_epoch = 0  # Track epoch with the best validation loss
     early_stop_flag = False
@@ -99,6 +98,16 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
         val_accuracy = correct_val_predictions / total_val_samples
 
         val_auc = roc_auc_score(all_val_labels.numpy(), all_val_probs.numpy())
+        # Convert probabilities to binary class labels
+        all_val_preds = (all_val_probs.numpy() > 0.5).astype(int)
+        val_F1 = f1_score(all_val_labels.numpy(), all_val_preds,average='weighted')
+
+        val_precision = precision_score(all_val_labels.numpy(), all_val_preds,average='weighted')
+
+        val_recall = recall_score(all_val_labels.numpy(), all_val_preds,average='weighted')
+
+        tn, fp, fn, tp = confusion_matrix(all_val_labels.numpy(), all_val_probs.numpy().round()).ravel()
+        val_specificity = tn / (tn + fp)
 
         # Check for early stopping
         best_value, best_value_epoch, early_stop_flag = early_stop_check(patience,
@@ -110,7 +119,8 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
 
         # Save the best model under the best_model_state parameter and it's optimizer
         if val_auc == best_value:
-            # best_model_state = model.state_dict()
+            if save:
+                 best_model_state = model.state_dict()
             best_model_optimizer_state = optimizer.state_dict()
 
         if trial is not None:
@@ -122,6 +132,10 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
                 "Validation Loss": val_loss,
                 "Validation Accuracy": val_accuracy,
                 'Validation AUC': val_auc,
+                'Validation F1': val_F1,
+                'Validation Precision': val_precision,
+                'Validation Recall': val_recall,
+                'Validation Specificity': val_specificity
             })
 
         if early_stop_flag: # Checks whether the early stopping condition has been met, as indicated by the early_stop_flag
@@ -131,7 +145,12 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
     if best_model_state is not None and trial is not None: # basically just makes sure that there is a better model (if there is an error the val loss will remain -inf)
         save_dir = os.path.join(utils.MODELS_DIR, architecture)
         os.makedirs(save_dir, exist_ok=True)  # Ensures that dir exists
-        torch.save({'optimizer_state_dict': best_model_optimizer_state},
+        if save:
+            torch.save({'model_state_dict': best_model_state, 'optimizer_state_dict': best_model_optimizer_state},
+                       f"{save_dir}/best_model_trial_{trial.number}_fold_{fold}.pt")  # Save into the same directory
+        else:
+            torch.save({'optimizer_state_dict': best_model_optimizer_state},
                    f"{save_dir}/best_model_trial_{trial.number}_fold_{fold}.pt") # Save into the same directory
+
 
     return best_value
