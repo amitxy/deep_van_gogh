@@ -25,7 +25,7 @@ def early_stop_check(patience, best_value, best_value_epoch, current_value, curr
 
 
 
-def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, criterion, epochs, patience, device, trial, architecture, fold,save=False):
+def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, criterion, epochs, patience, device, trial, architecture, fold, save=False):
     best_value = float('-inf')  # Initialize the best validation loss
     best_value_epoch = 0  # Track epoch with the best validation loss
     early_stop_flag = False
@@ -100,6 +100,7 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
         val_auc = roc_auc_score(all_val_labels.numpy(), all_val_probs.numpy())
         # Convert probabilities to binary class labels
         all_val_preds = (all_val_probs.numpy() > 0.5).astype(int)
+        # Get all relevant validation metrics: F1, Precision, Recall, Specificity
         val_F1 = f1_score(all_val_labels.numpy(), all_val_preds,average='weighted')
 
         val_precision = precision_score(all_val_labels.numpy(), all_val_preds,average='weighted')
