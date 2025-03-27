@@ -25,7 +25,7 @@ def early_stop_check(patience, best_value, best_value_epoch, current_value, curr
 
 
 
-def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, criterion, epochs, patience, device, trial, architecture, fold):
+def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, criterion, epochs, patience, device, trial, architecture, fold, save_model=False):
     best_value = float('-inf')  # Initialize the best validation loss
     best_value_epoch = 0  # Track epoch with the best validation loss
     early_stop_flag = False
@@ -118,7 +118,7 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
 
         # Save the best model under the best_model_state parameter and it's optimizer
         if val_auc == best_value:
-            # best_model_state = model.state_dict()
+            best_model_state = model.state_dict()
             best_model_optimizer_state = optimizer.state_dict()
 
         if trial is not None:
@@ -139,12 +139,16 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
         if early_stop_flag: # Checks whether the early stopping condition has been met, as indicated by the early_stop_flag
             break # Exits the training loop immediately if the early stopping condition is satisfied
 
+    save_dir = os.path.join(utils.MODELS_DIR, architecture)
+    os.makedirs(save_dir, exist_ok=True)  # Ensures that dir exists
+
     # Save the best model as a .pt file
     if best_model_state is not None and trial is not None: # basically just makes sure that there is a better model (if there is an error the val loss will remain -inf)
-        save_dir = os.path.join(utils.MODELS_DIR, architecture)
-        os.makedirs(save_dir, exist_ok=True)  # Ensures that dir exists
         torch.save({'optimizer_state_dict': best_model_optimizer_state},
                    f"{save_dir}/best_model_trial_{trial.number}_fold_{fold}.pt") # Save into the same directory
+
+    if save_model:
+        torch.save(best_model_state, f'best_model.pt')  # Save into the same directory
 
 
     return best_value
