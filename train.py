@@ -77,8 +77,8 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
         with torch.no_grad():  # Disable gradient computation
             for inputs, labels in val_loader: # iterate on the val_loader's batches
                 inputs, labels = inputs.to(device), labels.to(device)
-                outputs = model(inputs)
-                loss = criterion(outputs, labels)
+                outputs = model(inputs) # Getting the outputs from the model - validation set
+                loss = criterion(outputs, labels) # Computing the val loss
                 val_loss += loss.item() * inputs.size(0)
                 total_val_samples += inputs.size(0)
                 # Calculate correct predictions for validation accuracy
