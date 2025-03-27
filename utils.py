@@ -2,11 +2,12 @@ import os
 import time
 import sys
 
-DATA_DIR = './data/dataset'
-DATASET_DIR = 'data/dataset/Post_Impressionism'
-CSV_PATH = 'data/dataset/classes.csv'
-OPTIMIZED_DIR = './data/optimized/'
-MODELS_DIR = './models/'
+# DATA_DIR = './data/dataset'
+DATA_DIR = r'D:\Users\amitr5\Documents\data'
+DATASET_DIR = f'{DATA_DIR}/dataset/Post_Impressionism'
+CSV_PATH = f'{DATA_DIR}/dataset/classes.csv'
+OPTIMIZED_DIR = f'{DATA_DIR}/optimized/'
+MODELS_DIR = f'{DATA_DIR}/models/'
 
 def show_optimization_progress(current_size, total_size):
     sys.stdout.flush()
