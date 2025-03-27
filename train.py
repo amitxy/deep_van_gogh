@@ -72,6 +72,7 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
         # For AUC calculation - pre-allocate arrays
         all_val_labels = torch.zeros(len(val_loader.dataset), dtype=torch.long)
         all_val_probs = torch.zeros(len(val_loader.dataset), dtype=torch.float32)
+        all_val_preds = torch.zeros(len(val_loader.dataset), dtype=torch.float32)
         idx = 0
 
         with torch.no_grad():  # Disable gradient computation
@@ -91,6 +92,7 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
                 batch_size = labels.size(0)
                 all_val_labels[idx:idx + batch_size] = labels.cpu()
                 all_val_probs[idx:idx + batch_size] = probs.cpu()
+                all_val_preds[idx:idx + batch_size] = predicted.cpu()
                 idx += batch_size
 
         # Calculate average validation loss and accuracy
@@ -99,13 +101,13 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
 
         val_auc = roc_auc_score(all_val_labels.numpy(), all_val_probs.numpy())
 
-        val_F1 = f1_score(all_val_labels.numpy(), all_val_probs.numpy(),average='weighted')
+        val_F1 = f1_score(all_val_labels.numpy(), all_val_preds.numpy(),average='weighted')
 
-        val_precision = precision_score(all_val_labels.numpy(), all_val_probs.numpy(),average='weighted')
+        val_precision = precision_score(all_val_labels.numpy(), all_val_preds.numpy(),average='weighted')
 
-        val_recall = recall_score(all_val_labels.numpy(), all_val_probs.numpy(),average='weighted')
+        val_recall = recall_score(all_val_labels.numpy(), all_val_preds.numpy(),average='weighted')
 
-        tn, fp, fn, tp = confusion_matrix(all_val_labels.numpy(), all_val_probs.numpy().round()).ravel()
+        tn, fp, fn, tp = confusion_matrix(all_val_labels.numpy(), all_val_preds).ravel()
         val_specificity = tn / (tn + fp)
 
         # Check for early stopping
