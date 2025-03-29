@@ -1,31 +1,55 @@
 import torch
+from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score, confusion_matrix
+
 import wandb
 import os
 import utils
 
-# Checks whether training should stop early to prevent overfitting or excessive computation.
-# This function compares the current validation loss with the best recorded validation loss. If no improvement is observed within the allowed patience (number of epochs), it signals that training should stop early.
-def early_stop_check(patience, best_val_loss, best_val_loss_epoch, current_val_loss, current_val_loss_epoch):
-    early_stop_flag = False  # Initialize flag to be False
-    if current_val_loss < best_val_loss:
+def early_stop_check(patience,
+                     best_value,
+                     best_value_epoch,
+                     current_value,
+                     current_value_epoch,
+                     current_metrics,
+                     best_metrics,
+                     direction='maximize'):
+    """
+    Checks whether training should stop early to prevent overfitting or excessive computation.
+    This function compares the current validation metric with the best recorded validation metric.
+    If no improvement is observed within the allowed patience (number of epochs), training stops early.
+    """
+    early_stop_flag = False
+    direction = 1 if direction == 'maximize' else -1
+    if (current_value - best_value) * direction > 0:
         # Update the parameters holding the best validation loss details
-        best_val_loss = current_val_loss
-        best_val_loss_epoch = current_val_loss_epoch
+        best_value = current_value
+        best_value_epoch = current_value_epoch
+        best_metrics = current_metrics.copy()
     else:
         # Check if more than acceptable epochs have passed without improvement
-        if current_val_loss_epoch - best_val_loss_epoch > patience:
-            early_stop_flag = True  # Change flag
-    return best_val_loss, best_val_loss_epoch, early_stop_flag
+        if current_value_epoch - best_value_epoch > patience:
+            early_stop_flag = True
+    return best_value, best_value_epoch, early_stop_flag, best_metrics
 
 
-def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, criterion, epochs, patience, device, trial, architecture):
-    best_val_loss = float('inf')  # Initialize the best validation loss
-    best_val_loss_epoch = 0  # Track epoch with the best validation loss
+def train_model_with_hyperparams(model,
+                                 train_loader,
+                                 val_loader,
+                                 optimizer,
+                                 criterion,
+                                 epochs,
+                                 patience,
+                                 device,
+                                 trial=None,
+                                 fold=None,
+                                 architecture='model',
+                                 save_model=False,
+                                 log=True):
+    best_value = float('-inf')  # Initialize the best validation loss, -inf because we maximize
+    best_value_epoch = 0  # Track epoch with the best validation loss
     early_stop_flag = False
-
-    # To save the best model in each trial
-    best_model_state = None
-    best_model_optimizer_state = None
+    best_model_state = None  # To save the best model
+    best_metrics = None
 
     model.to(device)
     for epoch in range(1, epochs + 1):
@@ -56,54 +80,90 @@ def train_model_with_hyperparams(model, train_loader, val_loader, optimizer, cri
         train_loss /= total_train_samples
         train_accuracy = correct_train_predictions / total_train_samples
 
-        # Validation loop
-        model.eval()  # Enable evaluation mode
-        val_loss = 0.0 # Same initialization as in the train
-        total_val_samples = 0 # Same initialization as in the train
-        correct_val_predictions = 0 # Same initialization as in the train
-
-        with torch.no_grad():  # Disable gradient computation
-            for inputs, labels in val_loader: # iterate on the val_loader's batches
-                inputs, labels = inputs.to(device), labels.to(device)
-                outputs = model(inputs)
-                loss = criterion(outputs, labels)
-                val_loss += loss.item() * inputs.size(0)
-                total_val_samples += inputs.size(0)
-
-                # Calculate correct predictions for validation accuracy
-                _, predicted = torch.max(outputs, 1)
-                correct_val_predictions += (predicted == labels).sum().item()
-
-        # Calculate average validation loss and accuracy
-        val_loss /= total_val_samples
-        val_accuracy = correct_val_predictions / total_val_samples
+        val_metrics = validation(model, criterion, val_loader, device)
+        val_auc = val_metrics['Validation AUC']
 
         # Check for early stopping
-        best_val_loss, best_val_loss_epoch, early_stop_flag = early_stop_check(patience, best_val_loss, best_val_loss_epoch, val_loss, epoch)
+        best_value, best_value_epoch, early_stop_flag, best_metrics = early_stop_check(patience,
+                                                                         best_value,
+                                                                         best_value_epoch,
+                                                                         val_auc,
+                                                                         epoch,
+                                                                         val_metrics,
+                                                                         best_metrics,
+                                                                         direction='maximize')
 
         # Save the best model under the best_model_state parameter and it's optimizer
-        if val_loss == best_val_loss:
+        if val_auc == best_value:
             best_model_state = model.state_dict()
-            best_model_optimizer_state = optimizer.state_dict()
 
-        if trial is not None:
-            # Log metrics to Weights & Biases - THIS IS WHERE WE TRACK THE RESULTS AND THE PROCESS
-            wandb.log({ #log == logging of the training process (e.g. results)
-                "Epoch": epoch,
-                "Train Loss": train_loss,
-                "Train Accuracy": train_accuracy,
-                "Validation Loss": val_loss,
-                "Validation Accuracy": val_accuracy
-            })
+        # Log metrics to Weights & Biases - THIS IS WHERE WE TRACK THE RESULTS AND THE PROCESS
+        if log:
+            track = {"Epoch": epoch, "Train Loss": train_loss, "Train Accuracy": train_accuracy}
+            track.update(val_metrics)
+            wandb.log(track)
 
         if early_stop_flag: # Checks whether the early stopping condition has been met, as indicated by the early_stop_flag
             break # Exits the training loop immediately if the early stopping condition is satisfied
 
     # Save the best model as a .pt file
-    if best_model_state is not None and trial is not None: # basically just makes sure that there is a better model (if there is an error the val loss will remain -inf)
+    if best_model_state is not None and save_model: # basically just makes sure that there is a better model (if there is an error the val loss will remain -inf)
         save_dir = os.path.join(utils.MODELS_DIR, architecture)
         os.makedirs(save_dir, exist_ok=True)  # Ensures that dir exists
-        torch.save({'model_state_dict': best_model_state, 'optimizer_state_dict': best_model_optimizer_state},
-                   f"{save_dir}/best_model_trial_{trial.number}.pt") # Save into the same directory
+        trial_ext = f'_trial_{trial.number}_fold_{fold}' if trial else ''
+        torch.save(best_model_state, f'{save_dir}/best_model{trial_ext}.pt')  # Save into the same directory
 
-    return best_val_loss
+    return best_metrics
+
+def validation(model, criterion, val_loader, device):
+    # Validation loop
+    model.eval()  # Enable evaluation mode
+    val_loss = 0.0  # Same initialization as in the train
+    total_val_samples = 0  # Same initialization as in the train
+    correct_val_predictions = 0  # Same initialization as in the train
+
+    # For AUC calculation - pre-allocate arrays
+    all_val_labels = torch.zeros(len(val_loader.dataset), dtype=torch.long)
+    all_val_probs = torch.zeros(len(val_loader.dataset), dtype=torch.float32)
+    all_val_preds = torch.zeros(len(val_loader.dataset), dtype=torch.float32)
+    idx = 0
+
+    with torch.no_grad():  # Disable gradient computation
+        for inputs, labels in val_loader:  # iterate on the val_loader's batches
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            val_loss += loss.item() * inputs.size(0)
+            total_val_samples += inputs.size(0)
+
+            # Calculate correct predictions for validation accuracy
+            _, predicted = torch.max(outputs, 1)
+            correct_val_predictions += (predicted == labels).sum().item()
+            # Get probabilities using softmax
+            probs = torch.softmax(outputs, dim=1)[:, 1]
+
+            # Store in pre-allocated arrays
+            batch_size = labels.size(0)
+            all_val_labels[idx:idx + batch_size] = labels.cpu()
+            all_val_probs[idx:idx + batch_size] = probs.cpu()
+            all_val_preds[idx:idx + batch_size] = predicted.cpu()
+            idx += batch_size
+
+    # Calculate validation matrices that we want to track
+    val_loss /= total_val_samples
+    val_accuracy = correct_val_predictions / total_val_samples
+    val_auc = roc_auc_score(all_val_labels.numpy(), all_val_probs.numpy())
+    val_F1 = f1_score(all_val_labels.numpy(), all_val_preds.numpy(), average='weighted')
+    val_precision = precision_score(all_val_labels.numpy(), all_val_preds.numpy(), average='weighted')
+    val_recall = recall_score(all_val_labels.numpy(), all_val_preds.numpy(), average='weighted')
+    tn, fp, fn, tp = confusion_matrix(all_val_labels.numpy(), all_val_preds).ravel()
+    val_specificity = tn / (tn + fp)
+    return {
+                "Validation Loss": val_loss,
+                "Validation Accuracy": val_accuracy,
+                'Validation AUC': val_auc,
+                'Validation F1': val_F1,
+                'Validation Precision': val_precision,
+                'Validation Recall': val_recall,
+                'Validation Specificity': val_specificity
+            }
