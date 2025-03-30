@@ -1,6 +1,5 @@
 import torch
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score, confusion_matrix
-
 import wandb
 import os
 import utils
@@ -106,16 +105,19 @@ def train_model_with_hyperparams(model,
         if early_stop_flag: # Checks whether the early stopping condition has been met, as indicated by the early_stop_flag
             break # Exits the training loop immediately if the early stopping condition is satisfied
 
-    # Save the best model as a .pt file
-    if best_model_state is not None and save_model: # basically just makes sure that there is a better model (if there is an error the val loss will remain -inf)
-        save_dir = os.path.join(utils.MODELS_DIR, architecture)
-        os.makedirs(save_dir, exist_ok=True)  # Ensures that dir exists
-        trial_ext = f'_trial_{trial.number}_fold_{fold}' if trial else ''
-        torch.save(best_model_state, f'{save_dir}/best_model{trial_ext}.pt')  # Save into the same directory
-
+    if log or save_model:
+        state_dict = best_model_state if (save_model and best_model_state) else None
+        best_metrics['Best Epoch'] = best_value_epoch
+        save_checkpoint(architecture=architecture,
+                    model_state_dict=state_dict,
+                    optimizer=optimizer,
+                    epochs=epochs,
+                    trial=trial,
+                    fold=fold,
+                    best_metrics=best_metrics)
     return best_metrics
 
-def validation(model, criterion, val_loader, device):
+def validation(model, criterion, val_loader, device, is_test=False):
     # Validation loop
     model.eval()  # Enable evaluation mode
     val_loss = 0.0  # Same initialization as in the train
@@ -158,12 +160,54 @@ def validation(model, criterion, val_loader, device):
     val_recall = recall_score(all_val_labels.numpy(), all_val_preds.numpy(), average='weighted')
     tn, fp, fn, tp = confusion_matrix(all_val_labels.numpy(), all_val_preds).ravel()
     val_specificity = tn / (tn + fp)
+    # Create a wandb confusion matrix plot
+    wandb_cm = wandb.plot.confusion_matrix(
+        y_true=all_val_labels.numpy(),
+        preds=all_val_preds.numpy(),
+        class_names=["Not Van Gogh", "Van Gogh"]
+    )
+    val_type = 'Test' if is_test else 'Validation'
     return {
-                "Validation Loss": val_loss,
-                "Validation Accuracy": val_accuracy,
-                'Validation AUC': val_auc,
-                'Validation F1': val_F1,
-                'Validation Precision': val_precision,
-                'Validation Recall': val_recall,
-                'Validation Specificity': val_specificity
+                f"{val_type} Loss": val_loss,
+                f"{val_type} Accuracy": val_accuracy,
+                f'{val_type} AUC': val_auc,
+                f'{val_type} F1': val_F1,
+                f'{val_type} Precision': val_precision,
+                f'{val_type} Recall': val_recall,
+                f'{val_type} Specificity': val_specificity,
+                'Confusion_matrix': wandb_cm
             }
+
+def save_checkpoint(**kwargs):
+    architecture = kwargs.get('architecture', 'model')
+    best_metrics =  kwargs.get('best_metrics', None)
+    if isinstance(best_metrics, dict) and 'Confusion_matrix' in best_metrics:
+        metrics = best_metrics.copy()
+        metrics.pop('Confusion_matrix', None)  # Remove the confusion matrix from the metrics
+        best_metrics = metrics
+
+    save_dir = os.path.join(utils.MODELS_DIR, architecture)
+    os.makedirs(save_dir, exist_ok=True)  # Ensures that dir exists
+
+
+    # Save the model state dict and hyperparameters
+    checkpoint = {
+        'model_state_dict': kwargs.get('model_state_dict', None),
+        'hyperparameters': {
+            'architecture': architecture,
+            'epochs': kwargs.get('epochs', -1),
+            'patience': kwargs.get('patience', -1),
+        },
+        'best_metrics': best_metrics
+    }
+    optimizer = kwargs.get('optimizer', None)
+    if optimizer:
+        checkpoint['hyperparameters'].update({
+            'optimizer': optimizer.__class__.__name__,
+            'learning_rate': optimizer.param_groups[0]['lr'],
+            'weight_decay': optimizer.param_groups[0]['weight_decay'],
+        })
+
+    trial = kwargs.get('trial', None)
+    trial_ext = f'_trial_{trial.number + 1}_fold_{kwargs.get("fold", -1)}' if trial else ''
+    torch.save(checkpoint, f'{save_dir}/{architecture}_best_model{trial_ext}.pt')  # Save into the same directory

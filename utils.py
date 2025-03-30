@@ -45,4 +45,4 @@ def get_opt_dataset(dataset_name, test_idx=None, val_idx=None):
 
 def mean_dict(dicts):
     keys = dicts[0].keys()
-    return {key: np.mean([d[key] for d in dicts]) for key in keys}
+    return {key: np.mean([d[key] for d in dicts]) for key in keys if np.issubdtype(type(dicts[0][key]), np.number) }
