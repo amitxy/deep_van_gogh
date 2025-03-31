@@ -98,7 +98,10 @@ def train_model_with_hyperparams(model,
 
         # Log metrics to Weights & Biases - THIS IS WHERE WE TRACK THE RESULTS AND THE PROCESS
         if log:
-            track = {"Epoch": epoch, "Train Loss": train_loss, "Train Accuracy": train_accuracy}
+            track = {"Epoch": epoch,
+                     "Train Loss": train_loss,
+                     "Train Accuracy": train_accuracy,
+                     "batch_size" : train_loader.batch_size}
             track.update(val_metrics)
             wandb.log(track)
 
@@ -114,6 +117,7 @@ def train_model_with_hyperparams(model,
                     epochs=epochs,
                     trial=trial,
                     fold=fold,
+                    patience=patience,
                     best_metrics=best_metrics)
     return best_metrics
 
@@ -155,19 +159,14 @@ def validation(model, criterion, val_loader, device, is_test=False):
     val_loss /= total_val_samples
     val_accuracy = correct_val_predictions / total_val_samples
     val_auc = roc_auc_score(all_val_labels.numpy(), all_val_probs.numpy())
-    val_F1 = f1_score(all_val_labels.numpy(), all_val_preds.numpy(), average='weighted')
-    val_precision = precision_score(all_val_labels.numpy(), all_val_preds.numpy(), average='weighted')
-    val_recall = recall_score(all_val_labels.numpy(), all_val_preds.numpy(), average='weighted')
+    val_F1 = f1_score(all_val_labels.numpy(), all_val_preds.numpy(), average='weighted', zero_division=0)
+    val_precision = precision_score(all_val_labels.numpy(), all_val_preds.numpy(), average='weighted', zero_division=0)
+    val_recall = recall_score(all_val_labels.numpy(), all_val_preds.numpy(), average='weighted', zero_division=0)
     tn, fp, fn, tp = confusion_matrix(all_val_labels.numpy(), all_val_preds).ravel()
     val_specificity = tn / (tn + fp)
-    # Create a wandb confusion matrix plot
-    wandb_cm = wandb.plot.confusion_matrix(
-        y_true=all_val_labels.numpy(),
-        preds=all_val_preds.numpy(),
-        class_names=["Not Van Gogh", "Van Gogh"]
-    )
+
     val_type = 'Test' if is_test else 'Validation'
-    return {
+    metrics =  {
                 f"{val_type} Loss": val_loss,
                 f"{val_type} Accuracy": val_accuracy,
                 f'{val_type} AUC': val_auc,
@@ -175,8 +174,17 @@ def validation(model, criterion, val_loader, device, is_test=False):
                 f'{val_type} Precision': val_precision,
                 f'{val_type} Recall': val_recall,
                 f'{val_type} Specificity': val_specificity,
-                'Confusion_matrix': wandb_cm
+
             }
+    if is_test:
+        # Create a wandb confusion matrix plot
+        wandb_cm = wandb.plot.confusion_matrix(
+            y_true=all_val_labels.numpy(),
+            preds=all_val_preds.numpy(),
+            class_names=["Not Van Gogh", "Van Gogh"]
+        )
+        metrics['Confusion_matrix'] = wandb_cm
+    return metrics
 
 def save_checkpoint(**kwargs):
     architecture = kwargs.get('architecture', 'model')
