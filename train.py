@@ -3,6 +3,8 @@ from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_sco
 import wandb
 import os
 import utils
+import numpy as np
+
 
 def early_stop_check(patience,
                      best_value,
@@ -49,7 +51,7 @@ def train_model_with_hyperparams(model,
     early_stop_flag = False
     best_model_state = None  # To save the best model
     best_metrics = None
-
+    metric_history = []
     model.to(device)
     for epoch in range(1, epochs + 1):
         model.train()  # Enable training mode
@@ -81,6 +83,7 @@ def train_model_with_hyperparams(model,
 
         val_metrics = validation(model, criterion, val_loader, device)
         val_auc = val_metrics['Validation AUC']
+        metric_history.append(val_metrics) # Store the metrics for each epoch
 
         # Check for early stopping
         best_value, best_value_epoch, early_stop_flag, best_metrics = early_stop_check(patience,
@@ -91,7 +94,6 @@ def train_model_with_hyperparams(model,
                                                                          val_metrics,
                                                                          best_metrics,
                                                                          direction='maximize')
-
         # Save the best model under the best_model_state parameter and it's optimizer
         if val_auc == best_value:
             best_model_state = model.state_dict()
@@ -110,7 +112,7 @@ def train_model_with_hyperparams(model,
 
     if log or save_model:
         state_dict = best_model_state if (save_model and best_model_state) else None
-        best_metrics['Best Epoch'] = best_value_epoch
+        best_metrics.update({'Best Epoch': best_value_epoch, 'batch_size': train_loader.batch_size})
         save_checkpoint(architecture=architecture,
                     model_state_dict=state_dict,
                     optimizer=optimizer,
@@ -119,7 +121,8 @@ def train_model_with_hyperparams(model,
                     fold=fold,
                     patience=patience,
                     best_metrics=best_metrics)
-    return best_metrics
+    # return best_metrics
+    return utils.mean_dict(metric_history)
 
 def validation(model, criterion, val_loader, device, is_test=False):
     # Validation loop
@@ -129,9 +132,13 @@ def validation(model, criterion, val_loader, device, is_test=False):
     correct_val_predictions = 0  # Same initialization as in the train
 
     # For AUC calculation - pre-allocate arrays
-    all_val_labels = torch.zeros(len(val_loader.dataset), dtype=torch.long)
-    all_val_probs = torch.zeros(len(val_loader.dataset), dtype=torch.float32)
-    all_val_preds = torch.zeros(len(val_loader.dataset), dtype=torch.float32)
+    # all_val_labels = torch.zeros(len(val_loader.dataset), dtype=torch.long)
+    # all_val_probs = torch.zeros(len(val_loader.dataset), dtype=torch.float32)
+    # all_val_preds = torch.zeros(len(val_loader.dataset), dtype=torch.float32)
+    all_val_preds = []
+    all_val_probs = []
+    all_val_labels = []
+
     idx = 0
 
     with torch.no_grad():  # Disable gradient computation
@@ -149,11 +156,18 @@ def validation(model, criterion, val_loader, device, is_test=False):
             probs = torch.softmax(outputs, dim=1)[:, 1]
 
             # Store in pre-allocated arrays
-            batch_size = labels.size(0)
-            all_val_labels[idx:idx + batch_size] = labels.cpu()
-            all_val_probs[idx:idx + batch_size] = probs.cpu()
-            all_val_preds[idx:idx + batch_size] = predicted.cpu()
-            idx += batch_size
+            # batch_size = labels.size(0)
+            # all_val_labels[idx:idx + batch_size] = labels.cpu()
+            # all_val_probs[idx:idx + batch_size] = probs.cpu()
+            # all_val_preds[idx:idx + batch_size] = predicted.cpu()
+            all_val_probs.append(probs.cpu())
+            all_val_preds.append(predicted.cpu())
+            all_val_labels.append(labels.cpu())
+            # idx += batch_size
+
+    all_val_probs = torch.cat(all_val_probs)
+    all_val_preds = torch.cat(all_val_preds)
+    all_val_labels = torch.cat(all_val_labels)
 
     # Calculate validation matrices that we want to track
     val_loss /= total_val_samples
@@ -176,27 +190,37 @@ def validation(model, criterion, val_loader, device, is_test=False):
                 f'{val_type} Specificity': val_specificity,
 
             }
-    if is_test:
-        # Create a wandb confusion matrix plot
-        wandb_cm = wandb.plot.confusion_matrix(
-            y_true=all_val_labels.numpy(),
-            preds=all_val_preds.numpy(),
-            class_names=["Not Van Gogh", "Van Gogh"]
-        )
-        metrics['Confusion_matrix'] = wandb_cm
+    # if is_test:
+    #     # Create a wandb confusion matrix plot
+    #     wandb_cm = wandb.plot.confusion_matrix(
+    #         probs=None,
+    #         y_true=all_val_labels.numpy(),
+    #         preds=all_val_preds.numpy(),
+    #         class_names=["Not Van Gogh", "Van Gogh"]
+    #     )
+    #     metrics['Confusion_matrix'] = wandb_cm
+    # Create a wandb confusion matrix plot
+    wandb_cm = wandb.plot.confusion_matrix(
+        probs=None,
+        y_true=all_val_labels.numpy(),
+        preds=all_val_preds.numpy(),
+        class_names=["Not Van Gogh", "Van Gogh"]
+    )
+    metrics[f'{val_type} Confusion_matrix'] = wandb_cm
     return metrics
 
 def save_checkpoint(**kwargs):
     architecture = kwargs.get('architecture', 'model')
     best_metrics =  kwargs.get('best_metrics', None)
-    if isinstance(best_metrics, dict) and 'Confusion_matrix' in best_metrics:
+    if isinstance(best_metrics, dict):
         metrics = best_metrics.copy()
-        metrics.pop('Confusion_matrix', None)  # Remove the confusion matrix from the metrics
+        for key in list(metrics.keys()):
+            if not np.issubdtype(type(metrics[key]), np.number):
+                metrics.pop(key, None)  # Remove the confusion matrix from the metrics
         best_metrics = metrics
 
     save_dir = os.path.join(utils.MODELS_DIR, architecture)
     os.makedirs(save_dir, exist_ok=True)  # Ensures that dir exists
-
 
     # Save the model state dict and hyperparameters
     checkpoint = {
@@ -216,6 +240,6 @@ def save_checkpoint(**kwargs):
             'weight_decay': optimizer.param_groups[0]['weight_decay'],
         })
 
-    trial = kwargs.get('trial', None)
+    trial = kwargs.get('trial', -2)
     trial_ext = f'_trial_{trial.number + 1}_fold_{kwargs.get("fold", -1)}' if trial else ''
     torch.save(checkpoint, f'{save_dir}/{architecture}_best_model{trial_ext}.pt')  # Save into the same directory
