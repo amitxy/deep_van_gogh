@@ -2,6 +2,7 @@
 This project explores the intersection of deep learning and art, focusing on classifying and generating paintings in the style of Vincent Van Gogh. It has been a major part of a course we took - "Introduction to Deep Learning" at TAU's faculty of engineering in 2024-2025, during the 3rd year of our studies.
 
 The project consists of 2 main parts:
+
 **Part 1 - Transfer Learning & Fine Tuning:**
 1st, we used 2 pre-trained Convolutional Neural Networks (CNNs): AlexNet and VGG-19, and fine-tuned them on a dataset of post-impressionist paintings with a particular emphasis on Van Gogh’s work.
 Our goal was to build an accurate classifier capable of distinguishing between Van Gogh and other post-impressionist artists, while also learning meaningful visual features.
