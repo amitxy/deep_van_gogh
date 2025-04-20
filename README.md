@@ -5,7 +5,7 @@ The project consists of 2 main parts:
 
 **Part 1 - Transfer Learning & Fine Tuning:**
 
-1st, we used 2 pre-trained Convolutional Neural Networks (CNNs): AlexNet and VGG-19, and fine-tuned them on a dataset of post-impressionist paintings with a particular emphasis on Van Gogh’s work.
+1st, we used 2 pre-trained Convolutional Neural Networks (CNNs): AlexNet and VGG-19, and fine-tuned them on a dataset of post-impressionist paintings, with a particular emphasis on Van Gogh’s work.
 Our goal was to build an accurate classifier capable of distinguishing between Van Gogh and other post-impressionist artists, while also learning meaningful visual features.
 We used key techniques and tools, such as:
 - *Transfer Learning and Feature Extraction*
