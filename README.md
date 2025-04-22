@@ -24,6 +24,7 @@ We then used the fine-tuned CNN models from Part 1 to test how well they could c
 Throughout the project, we explored how deep models understand artistic styles (styles? or explicitly Van Gogh styles?) and how well they generalize. We continuously compared the performance of AlexNet and VGG-19 - both in terms of classification accuracy and their ability to support artistic generation, while gaining hands-on experience with CNN fine-tuning, model optimization, and experiment tracking using tools like Optuna and W&B.
 
 Some Style Transfer examples from our project:
+
 ![](output_3.jpg)
 ![](output_4.jpg)
 
